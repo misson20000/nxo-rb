@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+require "bundler/setup"
+require "nxo"
+
+nso = Nxo::NsoFile.new(File.open(ARGV[0], "rb"))
+
+puts "Name: " + nso.name_heuristic
+puts "FS SDK Versions:"
+nso.fs_sdk_versions.each do |v|
+  puts "  - " + v
+end
+puts nso.rodata.contents.scan(/SDK MW[ -~]*/)
