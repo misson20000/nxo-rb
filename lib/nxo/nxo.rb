@@ -55,12 +55,7 @@ module Nxo
           offset = address - seg.address
           available_size = seg.size - offset
           safe_size = [size, available_size].min
-          str = seg[offset, safe_size]
-          if safe_size < size then
-            return str + self[address + safe_size, size - safe_size]
-          else
-            return str
-          end
+          return seg[offset, safe_size]
         end
       end
       raise Error::UnmappedAddressError.new(address)

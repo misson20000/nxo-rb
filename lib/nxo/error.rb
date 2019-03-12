@@ -42,7 +42,7 @@ module Nxo
 
     class UnmappedAddressError < RuntimeError
       def initialize(address)
-        super("No segment at 0x#{address.to_s(166)}")
+        super("No segment at 0x#{address.to_s(16)}")
         @address = address
       end
 

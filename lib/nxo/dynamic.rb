@@ -79,7 +79,7 @@ module Nxo
       end
 
       def string(i)
-        @nxo[self[DT::STRTAB].value + i, 1024].unpack("Z1024")[0]
+        @nxo[self[DT::STRTAB].value + i, 8192].unpack("Z8192")[0]
       end
       
       SYMBOL_SIZE = 0x18
