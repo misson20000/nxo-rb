@@ -68,6 +68,14 @@ module Nxo
         end
       end
 
+      attr_reader :entries
+
+      def contains?(tag)
+        return @entries.any? do |entry|
+          entry.tag == tag
+        end
+      end
+      
       def [](tag)
         return @entries.find do |entry|
           entry.tag == tag
@@ -76,6 +84,35 @@ module Nxo
 
       def nchain
         return @nxo[self[DT::HASH].value + 4, 4].unpack("L<")[0]
+      end
+
+      def gnu_hash_num_symbols
+        # https://flapenguin.me/elf-dt-gnu-hash
+        nbuckets, symoffset, bloom_size, bloom_shift = @nxo[self[DT::GNU_HASH].value, 16].unpack("L<L<L<L<")
+        buckets = @nxo[self[DT::GNU_HASH].value + 16 + 8*bloom_size, 4*nbuckets].unpack("L<*")
+        chain_offset = self[DT::GNU_HASH].value + 16 + 8*bloom_size + 4*nbuckets
+
+        # Find the bucket that starts at the highest index
+        index = buckets.max
+
+        if index < symoffset then
+          return symoffset
+        end
+        
+        # Walk the chain until it ends
+        while (@nxo[chain_offset + (index - symoffset)*4, 4].unpack("L<")[0] & 1) == 0 do
+          index+= 1
+        end
+
+        index
+      end
+
+      def num_symbols
+        if self.contains?(DT::HASH) then
+          nchain
+        else
+          gnu_hash_num_symbols
+        end
       end
 
       def string(i)
@@ -88,6 +125,10 @@ module Nxo
         pack = @nxo[self[DT::SYMTAB].value + i * SYMBOL_SIZE, SYMBOL_SIZE]
         name, info, other, shndx, value, size = pack.unpack("L<CCS<Q<Q<")
         return Symbol.new(string(name), info, other, shndx, value, size)
+      end
+
+      def symbols
+        self.num_symbols.times.map do |i| self.symbol(i) end
       end
     end
   end

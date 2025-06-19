@@ -25,7 +25,7 @@ module Nxo
       end
       
       def [](offset, size)
-        return @contents[offset, size]
+        return @contents.byteslice(offset, size)
       end
     end
 
